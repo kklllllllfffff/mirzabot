@@ -33,8 +33,16 @@ RUN COMPOSER_ALLOW_SUPERUSER=1 composer install \
 
 COPY . .
 
-RUN a2enmod rewrite headers
+RUN a2dismod mpm_event mpm_worker mpm_prefork || true \
+    && rm -f /etc/apache2/mods-enabled/mpm_event.load \
+             /etc/apache2/mods-enabled/mpm_event.conf \
+             /etc/apache2/mods-enabled/mpm_worker.load \
+             /etc/apache2/mods-enabled/mpm_worker.conf \
+             /etc/apache2/mods-enabled/mpm_prefork.load \
+             /etc/apache2/mods-enabled/mpm_prefork.conf \
+    && a2enmod mpm_prefork \
+    && a2enmod rewrite headers
 
 ENV PORT=8080
 
-CMD ["sh", "-c", "sed -i \"s/Listen 80/Listen ${PORT}/\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT}>/g\" /etc/apache2/sites-enabled/000-default.conf && apache2-foreground"]
+CMD ["sh", "-c", "sed -i \"s/Listen 80/Listen ${PORT:-8080}/\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-8080}>/g\" /etc/apache2/sites-enabled/000-default.conf && apache2ctl configtest && apache2-foreground"]
