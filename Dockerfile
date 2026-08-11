@@ -15,7 +15,16 @@ RUN apt-get update && apt-get install -y \
         --with-freetype \
         --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        gd mysqli pdo pdo_mysql mbstring zip intl bcmath xml soap \
+        gd \
+        mysqli \
+        pdo \
+        pdo_mysql \
+        mbstring \
+        zip \
+        intl \
+        bcmath \
+        xml \
+        soap \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -33,15 +42,13 @@ RUN COMPOSER_ALLOW_SUPERUSER=1 composer install \
 
 COPY . .
 
-RUN a2dismod mpm_event mpm_worker mpm_prefork || true \
-    && rm -f /etc/apache2/mods-enabled/mpm_event.load \
-             /etc/apache2/mods-enabled/mpm_event.conf \
-             /etc/apache2/mods-enabled/mpm_worker.load \
-             /etc/apache2/mods-enabled/mpm_worker.conf \
-             /etc/apache2/mods-enabled/mpm_prefork.load \
-             /etc/apache2/mods-enabled/mpm_prefork.conf \
+RUN find /etc/apache2/mods-enabled -maxdepth 1 \
+        \( -name 'mpm_*.load' -o -name 'mpm_*.conf' \) \
+        -delete \
     && a2enmod mpm_prefork \
-    && a2enmod rewrite headers
+    && a2enmod rewrite \
+    && a2enmod headers \
+    && apache2ctl configtest
 
 ENV PORT=8080
 
