@@ -42,24 +42,12 @@ RUN COMPOSER_ALLOW_SUPERUSER=1 composer install \
 
 COPY . .
 
-RUN find /etc/apache2/mods-enabled -maxdepth 1 \
-        \( -name 'mpm_*.load' -o -name 'mpm_*.conf' \) \
-        -delete \
-    && find /etc/apache2 -type f \
-        \( -name '*.conf' -o -name '*.load' \) \
-        -exec sed -i \
-        -e '/^[[:space:]]*LoadModule[[:space:]]\+mpm_event_module/d' \
-        -e '/^[[:space:]]*LoadModule[[:space:]]\+mpm_worker_module/d' \
-        -e '/^[[:space:]]*LoadModule[[:space:]]\+mpm_prefork_module/d' \
-        {} \; \
-    && ln -sf /etc/apache2/mods-available/mpm_prefork.load \
-        /etc/apache2/mods-enabled/mpm_prefork.load \
-    && ln -sf /etc/apache2/mods-available/mpm_prefork.conf \
-        /etc/apache2/mods-enabled/mpm_prefork.conf \
+RUN a2dismod mpm_event mpm_worker mpm_prefork || true \
+    && a2enmod mpm_prefork \
     && a2enmod rewrite \
     && a2enmod headers \
     && apache2ctl configtest
 
 ENV PORT=8080
 
-CMD ["sh", "-c", "find /etc/apache2/mods-enabled -maxdepth 1 -type l -name 'mpm_*.load' ! -name 'mpm_prefork.load' -delete && find /etc/apache2/mods-enabled -maxdepth 1 -type l -name 'mpm_*.conf' ! -name 'mpm_prefork.conf' -delete && sed -i \"s/Listen 80/Listen ${PORT:-8080}/\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-8080}>/g\" /etc/apache2/sites-enabled/000-default.conf && apache2ctl configtest && apache2-foreground"]
+CMD ["sh", "-c", "sed -i \"s/Listen 80/Listen ${PORT:-8080}/\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-8080}>/g\" /etc/apache2/sites-enabled/000-default.conf && apache2ctl configtest && apache2-foreground"]
