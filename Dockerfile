@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libxml2-dev \
     libonig-dev \
+    default-mysql-client \
     build-essential \
     autoconf \
     pkg-config \
