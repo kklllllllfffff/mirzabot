@@ -41,32 +41,24 @@ $adminnumber = getenv('ADMIN_NUMBER') ?: '';
 $domainhosts = getenv('DOMAIN_NAME') ?: '';
 $usernamebot = getenv('USERNAME_BOT') ?: '';
 
-// ── اتصال mysqli هم پایدار (persistent) باشد ──
+// ── اتصال mysqli هم پایدار (persistent) باشد: "p:" جلوی هاست ← اتصال بین درخواست‌ها زنده می‌ماند ──
 $connect = null;
 if (function_exists('mysqli_init')) {
     $connect = mysqli_init();
     if ($connect && @mysqli_real_connect(
         $connect,
-        $dbhost,
+        'p:' . $dbhost,
         $usernamedb,
         $passworddb,
         $dbname,
-        (int) $dbport,
-        null,
-        MYSQLI_CLIENT_COMPRESS
+        (int) $dbport
     )) {
         mysqli_set_charset($connect, "utf8mb4");
     } else {
-        // تلاش دوم بدون گزینه‌های اضافه
         if ($connect) {
             mysqli_close($connect);
         }
-        $connect = mysqli_init();
-        if ($connect && @mysqli_real_connect($connect, $dbhost, $usernamedb, $passworddb, $dbname, (int) $dbport)) {
-            mysqli_set_charset($connect, "utf8mb4");
-        } else {
-            $connect = false;
-            error_log("MySQLi connection failed: " . (function_exists('mysqli_connect_error') ? mysqli_connect_error() : ''));
-        }
+        $connect = false;
+        error_log("MySQLi connection failed: " . (function_exists('mysqli_connect_error') ? mysqli_connect_error() : ''));
     }
 }

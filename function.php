@@ -2010,11 +2010,10 @@ function parseConfigs($input)
 
 // ═══════════════════════════════════════════════════════════════════
 //  ⬇️ افزوده‌شده برای ریلوی: کش کوتاه‌مدت کوئری‌های خواندنی
-//  اگر APCu نصب باشد (Dockerfile جدید) کوئری تا چند ثانیه کش می‌شود
-//  و دیگر هر بار یک رفت‌وبرگشت به دیتابیس ندارد. بدون APCu هم
-//  بدون هیچ تغییری کوئری عادی را اجرا می‌کند.
+//  با APCu (Dockerfile جدید) کوئری تا ۶۰ ثانیه در حافظه می‌ماند.
+//  بدون APCu هم کوئری عادی را اجرا می‌کند (بدون خطا).
 // ═══════════════════════════════════════════════════════════════════
-function cached(string $sql, int $ttl = 3): array
+function cached(string $sql, int $ttl = 60): array
 {
     global $pdo;
     if (function_exists('apcu_enabled') && apcu_enabled()) {
@@ -2028,4 +2027,24 @@ function cached(string $sql, int $ttl = 3): array
         return $rows;
     }
     return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function cachedq(string $sql, array $params = [], int $ttl = 60): array
+{
+    global $pdo;
+    $key = 'mzq:' . hash('sha256', $sql . '|' . json_encode($params));
+    if (function_exists('apcu_enabled') && apcu_enabled()) {
+        $hit = apcu_fetch($key);
+        if ($hit !== false) {
+            return $hit;
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        apcu_store($key, $rows, $ttl);
+        return $rows;
+    }
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
