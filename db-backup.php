@@ -1,9 +1,9 @@
 <?php
 // ─────────────────────────────────────────────────────────────────────
-//  db-backup.php v2 — بکاپ خودکار دیتابیس و ارسال به تلگرام ادمین
-//  تغییرات v2:
-//    - اگر mysqldump نصب نباشد، خطای واضح می‌دهد (نه FAILED بی‌معنی)
-//    - نتیجه‌ی موفق/ناموفق به تلگرام ADMIN_NUMBER هم پیام می‌دهد
+//  db-backup.php v3 — بکاپ خودکار دیتابیس و ارسال به تلگرام ادمین
+//  تغییرات v3:
+//    - حذف --ssl-mode (سازگار با کلاینت MariaDB که روی دبیان نصب می‌شود)
+//    - خطای واقعی از فایل خطا خوانده و در پیام/تلگرام نمایش داده می‌شود
 // ─────────────────────────────────────────────────────────────────────
 require_once 'config.php';
 require_once 'botapi.php';
@@ -24,31 +24,39 @@ function notify($text)
     }
 }
 
-// 1) آیا mysqldump اصلاً نصب است؟
-$has = trim((string) @shell_exec('command -v mysqldump 2>/dev/null')) !== '';
-if (!$has) {
+// 1) آیا mysqldump نصب است؟
+$dump = trim((string) @shell_exec('command -v mysqldump 2>/dev/null'));
+if ($dump === '') {
     notify('❌ بکاپ انجام نشد: mysqldump در این ایمیج نیست. '
-        . 'Dockerfile دارای default-mysql-client را push کن و سرویس backup را Redeploy کن.');
+        . 'Dockerfile دارای default-mysql-client را push کن و سرویس را Redeploy کن.');
     exit(1);
 }
 
-// 2) ساخت بکاپ
+// 2) ساخت بکاپ — --skip-ssl: SSL را خاموش می‌کند (سازگار با کلاینت MariaDB/MySQL روی دبیان
+//    و رفع خطای self-signed certificate که Railway برای اتصال SSL الزامی کرده)
 $backup = __DIR__ . '/backup_' . date('Y-m-d_H-i') . '.sql';
-$command = sprintf(
-    'mysqldump -h %s -P %s -u %s -p%s --single-transaction --ssl-mode=DISABLED %s > %s 2>&1',
+$errfile = $backup . '.err';
+$cmd = sprintf(
+    '%s -h %s -P %s -u %s -p%s --skip-ssl --single-transaction %s > %s 2> %s',
+    escapeshellarg($dump),
     escapeshellarg($dbhost),
     escapeshellarg($dbport),
     escapeshellarg($dbuser),
     escapeshellarg($dbpass),
     escapeshellarg($dbname),
-    escapeshellarg($backup)
+    escapeshellarg($backup),
+    escapeshellarg($errfile)
 );
-exec($command, $out, $code);
+exec($cmd, $out, $code);
+
+$err = @file_get_contents($errfile);
+@unlink($errfile);
+$err = ($err !== false && trim($err) !== '') ? trim($err) : '';
 
 if ($code !== 0 || !file_exists($backup) || filesize($backup) < 100) {
-    $detail = trim(implode("\n", $out));
     notify('❌ بکاپ دیتابیس ناموفق بود (کد=' . $code . ")\n"
-        . ($detail !== '' ? $detail : '(بدون خروجی — احتمالاً mysqldump نصب نیست)'));
+        . ($err !== '' ? $err : '(بدون جزئیات — خروجی دستور را ببین)'));
+    if (file_exists($backup)) @unlink($backup);
     exit(1);
 }
 
