@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libxml2-dev \
     libonig-dev \
+    build-essential \
+    autoconf \
+    pkg-config \
     && docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
@@ -25,6 +28,9 @@ RUN apt-get update && apt-get install -y \
         bcmath \
         xml \
         soap \
+        opcache \
+    && pecl install apcu \
+    && docker-php-ext-enable apcu \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

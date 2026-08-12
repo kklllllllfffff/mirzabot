@@ -427,7 +427,7 @@ $backadmin = json_encode([
 ]);
 //------------------  [ list panel ]----------------//
 $namepanel = [];
-    $allPanelRows = $pdo->query("SELECT * FROM marzban_panel")->fetchAll(PDO::FETCH_ASSOC);
+    $allPanelRows = cached("SELECT * FROM marzban_panel");
     foreach ($allPanelRows as $row) {
         $namepanel[] = [$row['name_panel']];
     }
@@ -455,9 +455,7 @@ $namepanel = [];
     $list_marzban_panel_edit_product = json_encode($list_marzban_panel_edit_product);
 //------------------  [ list channel ]----------------//
 $list_channels = [];
-    $stmt = $pdo->prepare("SELECT * FROM channels");
-    $stmt->execute();
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach (cached("SELECT * FROM channels") as $row) {
         $list_channels[] = [$row['link']];
     }
     $list_channels_join = [
@@ -476,9 +474,7 @@ $list_channels = [];
     $list_channels_joins = json_encode($list_channels_join);
 //------------------  [ list card ]----------------//
 $list_card = [];
-    $stmt = $pdo->prepare("SELECT * FROM card_number");
-    $stmt->execute();
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach (cached("SELECT * FROM card_number") as $row) {
         $list_card[] = [$row['cardnumber']];
     }
     $list_card_remove = [
@@ -496,7 +492,7 @@ $list_card = [];
     ];
     $list_card_remove = json_encode($list_card_remove);
 //------------------  [ help list ]----------------//
-    $helpRows = $pdo->query("SELECT * FROM help")->fetchAll(PDO::FETCH_ASSOC);
+    $helpRows = cached("SELECT * FROM help");
     $helpkey = [];
     foreach ($helpRows as $row) {
         $helpkey[] = [$row['name_os']];
@@ -542,7 +538,7 @@ $json_list_helpـcategory = json_encode($helpcwtgory);
 
 
 //------------------  [ help app ]----------------//
-$appRows = $pdo->query("SELECT * FROM app")->fetchAll(PDO::FETCH_ASSOC);
+$appRows = cached("SELECT * FROM app");
 $helpapp = ['inline_keyboard' => []];
 foreach ($appRows as $result) {
     $helpapp['inline_keyboard'][] = [
@@ -721,9 +717,7 @@ $list_marzban_usertest = json_encode($list_marzban_panel_usertest);
     $json_list_product_list_admin = json_encode($list_product);
 //--------------------------------------------------
     $Discount = [];
-    $stmt = $pdo->prepare("SELECT * FROM Discount");
-    $stmt->execute();
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach (cached("SELECT * FROM Discount") as $row) {
         $Discount[] = [$row['code']];
     }
     $list_Discount = [
@@ -741,9 +735,7 @@ $list_marzban_usertest = json_encode($list_marzban_panel_usertest);
     $json_list_Discount_list_admin = json_encode($list_Discount);
 //--------------------------------------------------
     $DiscountSell = [];
-    $stmt = $pdo->prepare("SELECT * FROM DiscountSell");
-    $stmt->execute();
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach (cached("SELECT * FROM DiscountSell") as $row) {
         $DiscountSell[] = [$row['codeDiscount']];
     }
     $list_Discountsell = [
@@ -1230,9 +1222,7 @@ $supportcenter = json_encode([
 ]);
 //------------------  [ list departeman ]----------------//
 $departeman = [];
-    $stmt = $pdo->prepare("SELECT * FROM departman");
-    $stmt->execute();
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach (cached("SELECT * FROM departman") as $row) {
         $departeman[] = [$row['name_departman']];
     }
     $departemans = [
@@ -1251,9 +1241,7 @@ $departeman = [];
     $departemanslist = json_encode($departemans);
 // list departeman
 $list_departman = ['inline_keyboard' => []];
-    $stmt = $pdo->prepare("SELECT * FROM departman");
-    $stmt->execute();
-    while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach (cached("SELECT * FROM departman") as $result) {
         $list_departman['inline_keyboard'][] = [
             ['text' => $result['name_departman'], 'callback_data' => "departman_{$result['id']}"]
         ];
@@ -1349,10 +1337,8 @@ function KeyboardCategory($location, $agent, $backuser = "backuser")
         $categoryKey = mb_strtolower(trim((string) $catRow['category']), 'UTF-8');
         $categoryCounts[$categoryKey] = ($categoryCounts[$categoryKey] ?? 0) + (int) $catRow['c'];
     }
-    $stmt = $pdo->prepare("SELECT * FROM category");
-    $stmt->execute();
     $list_category = ['inline_keyboard' => [],];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach (cached("SELECT * FROM category") as $row) {
         if (empty($categoryCounts[mb_strtolower(trim((string) $row['remark']), 'UTF-8')]))
             continue;
         $list_category['inline_keyboard'][] = [['text' => $row['remark'], 'callback_data' => "categorynames_" . $row['id']]];
@@ -1469,14 +1455,12 @@ $keyboardchangelimit = json_encode([
 ]);
 function KeyboardCategoryadmin()
 {
-    global $pdo, $textbotlang;
-    $stmt = $pdo->prepare("SELECT * FROM category");
-    $stmt->execute();
+    global $textbotlang;
     $list_category = [
         'keyboard' => [],
         'resize_keyboard' => true,
     ];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach (cached("SELECT * FROM category") as $row) {
         $list_category['keyboard'][] = [['text' => $row['remark']]];
     }
     $list_category['keyboard'][] = [

@@ -1,7 +1,7 @@
 <?php
 require_once 'vendor/autoload.php';
-require 'config.php';
-require 'vendor/autoload.php';
+require_once 'config.php'; // require_once: جلوگیری از اجرای دوباره‌ی config.php و اتصال دوباره به دیتابیس
+require_once 'vendor/autoload.php';
 ini_set('error_log', 'error_log');
 
 use Endroid\QrCode\Builder\Builder;
@@ -2006,4 +2006,26 @@ function parseConfigs($input)
     }
 
     return $configs;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  ⬇️ افزوده‌شده برای ریلوی: کش کوتاه‌مدت کوئری‌های خواندنی
+//  اگر APCu نصب باشد (Dockerfile جدید) کوئری تا چند ثانیه کش می‌شود
+//  و دیگر هر بار یک رفت‌وبرگشت به دیتابیس ندارد. بدون APCu هم
+//  بدون هیچ تغییری کوئری عادی را اجرا می‌کند.
+// ═══════════════════════════════════════════════════════════════════
+function cached(string $sql, int $ttl = 3): array
+{
+    global $pdo;
+    if (function_exists('apcu_enabled') && apcu_enabled()) {
+        $key = 'mzq:' . hash('sha256', $sql);
+        $hit = apcu_fetch($key);
+        if ($hit !== false) {
+            return $hit;
+        }
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        apcu_store($key, $rows, $ttl);
+        return $rows;
+    }
+    return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 }
