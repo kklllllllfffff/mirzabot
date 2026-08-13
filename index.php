@@ -4,6 +4,21 @@ ini_set('default_charset', 'UTF-8');
 ini_set('error_log', 'error_log');
 ini_set('memory_limit', '-1');
 require_once 'config.php';
+
+#-----------webhook_secret_token------------#
+// اعتبارسنجی هدر امنیتی تلگرام: فقط درخواست‌های واقعی تلگرام پذیرفته می‌شوند
+$webhookSecret = getenv('WEBHOOK_SECRET') ?: '';
+if ($webhookSecret !== '') {
+    $incoming = $_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '';
+    if (!is_string($incoming) || $incoming !== $webhookSecret) {
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Forbidden';
+        exit;
+    }
+}
+#-----------end webhook_secret_token------------#
+
 require_once 'botapi.php';
 require_once 'jdf.php';
 require_once 'function.php';
