@@ -54,4 +54,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # apc.enable_cli=1 و opcache.enable_cli=1 ← کش APCu و OPcache در وب‌سرور داخلی فعال شود
-CMD ["sh", "-c", "php -d apc.enable_cli=1 -d apc.ttl=60 -d opcache.enable_cli=1 -S 0.0.0.0:${PORT:-8080} -t /var/www/html"]
+CMD ["sh", "-c", "php -d apc.enable_cli=1 -d apc.ttl=60 -d opcache.enable_cli=1 -S 0.0.0.0:${PORT:-8080} /var/www/html/router.php"]
