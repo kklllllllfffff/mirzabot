@@ -378,6 +378,56 @@ if ($user['joinchannel'] != "active") {
         }
     }
 }
+#-----------claim_existing_config------------#
+if ($datain == "claimconfig") {
+    $claimKb = json_encode(['inline_keyboard' => [[['text' => '🔙 انصراف', 'callback_data' => 'backuser']]]]);
+    sendmessage($from_id, '📌 اسم کانفیگت توی پنل رو بفرست (مثلاً: ali12)\nاگه می‌خوای منصرف بشی، دکمه بازگشت رو بزن.', $claimKb, 'html');
+    step('claimconfig', $from_id);
+    return;
+} elseif ($user['step'] == "claimconfig" && $text != '' && !$is_bot) {
+    $claimName = strtolower(trim($text));
+    if (!preg_match('/^[a-z0-9_]{3,32}$/', $claimName)) {
+        sendmessage($from_id, '❌ اسم کانفیگ باید فقط حروف انگلیسی و عدد باشه (۳ تا ۳۲ کاراکتر).\nمثلاً: ali12', null, 'html');
+        return;
+    }
+    $stmtPanels = $pdo->prepare("SELECT * FROM marzban_panel WHERE type = 'x-ui_single' AND status = 'active'");
+    $stmtPanels->execute();
+    $panelsClaim = $stmtPanels->fetchAll(PDO::FETCH_ASSOC);
+    $claimed = false;
+    foreach ($panelsClaim as $pClaim) {
+        $respClaim = get_clinets($claimName, $pClaim);
+        if (!empty($respClaim['error']) || empty($respClaim['status']) || $respClaim['status'] != 200) continue;
+        $bodyClaim = json_decode($respClaim['body'], true);
+        if (!is_array($bodyClaim) || empty($bodyClaim['obj'])) continue;
+        $clientClaim = $bodyClaim['obj']['client'] ?? $bodyClaim['obj'];
+        $expiryMs = intval($clientClaim['expiryTime'] ?? 0);
+        $totalBytes = intval($clientClaim['totalGB'] ?? 0);
+        $claimTime = $expiryMs > 0 ? max(0, (int)ceil(($expiryMs - time() * 1000) / 86400000)) : 0;
+        $claimVol = $totalBytes > 0 ? (int)round($totalBytes / (1024 ** 3)) : 0;
+        $stmtDup = $pdo->prepare("SELECT COUNT(*) FROM invoice WHERE username = ?");
+        $stmtDup->execute([$claimName]);
+        if ($stmtDup->fetchColumn() > 0) {
+            sendmessage($from_id, '❌ این کانفیگ از قبل به یک حساب وصل شده.', null, 'html');
+            step('home', $from_id);
+            return;
+        }
+        $claimInvoice = bin2hex(random_bytes(4));
+        $claimNotif = json_encode(['volume' => false, 'time' => false]);
+        $stmtIns = $pdo->prepare("INSERT IGNORE INTO invoice (id_user, id_invoice, username, time_sell, Service_location, name_product, price_product, Volume, Service_time, Status, notifctions) VALUES (?, ?, ?, ?, ?, ?, '0', ?, ?, 'active', ?)");
+        $stmtIns->execute([$from_id, $claimInvoice, $claimName, time(), $pClaim['name_panel'], 'کانفیگ قبلی', $claimVol, $claimTime, $claimNotif]);
+        $claimed = true;
+        $volTxt = $claimVol == 0 ? 'نامحدود' : $claimVol . ' گیگ';
+        $timeTxt = $claimTime == 0 ? 'نامحدود' : $claimTime . ' روز';
+        sendmessage($from_id, "✅ کانفیگ «{$claimName}» با موفقیت به حسابت وصل شد!\n🗜 حجم: {$volTxt}\n⏳ مدت: {$timeTxt}\n\nحالا می‌تونی از بخش «سرویس‌های من» مدیریتش کنی.", $keyboard, 'html');
+        step('home', $from_id);
+        return;
+    }
+    if (!$claimed) {
+        sendmessage($from_id, '❌ کانفیگی با این اسم توی پنل پیدا نشد.\n📌 اسم دقیق کانفیگت رو چک کن و دوباره بفرست (یا /start بزن تا منصرف بشی).', null, 'html');
+    }
+    return;
+}
+#-----------end_claim_existing_config------------#
 if ($text == "/start" || $datain == "start" || $text == "start") {
     sendmessage($from_id, $textbotlang['users']['text_start'], $keyboard, "html");
     update("user", "Processing_value", "0", "id", $from_id);
@@ -385,6 +435,14 @@ if ($text == "/start" || $datain == "start" || $text == "start") {
     update("user", "Processing_value_tow", "0", "id", $from_id);
     update("user", "Processing_value_four", "0", "id", $from_id);
     step('home', $from_id);
+    // ═══ اتصال خودکار کانفیگ قبلی ═══
+    $stmtServ = $pdo->prepare("SELECT COUNT(*) FROM invoice WHERE id_user = :uid AND (status = 'active' OR status = 'end_of_time' OR status = 'end_of_volume' OR status = 'sendedwarn' OR status = 'send_on_hold')");
+    $stmtServ->execute([':uid' => $from_id]);
+    if ((int)$stmtServ->fetchColumn() == 0) {
+        $claimKbStart = json_encode(['inline_keyboard' => [[['text' => '🔗 اتصال کانفیگ قبلی', 'callback_data' => 'claimconfig']]]]);
+        sendmessage($from_id, 'اگه قبلاً کانفیگ داشتی و می‌خوای به حسابت وصل شه، دکمه زیر رو بزن 👇', $claimKbStart, 'html');
+    }
+    // ═══ پایان اتصال خودکار ═══
     return;
 } elseif ($text == "version") {
     sendmessage($from_id, file_get_contents('version'), null, 'html');
