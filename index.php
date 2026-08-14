@@ -3606,7 +3606,9 @@ if ($user['step'] == "createusertest" || preg_match('/locationtest_(.*)/', $data
     } else {
         $datakeyboard = "prodcutservice_";
     }
-    if ($statuscustomvolume == "1" && $marzban_list_get['type'] != "Manualsale") {
+    // فقط برای دسته‌های مشخص (حجمی) دکمه حجم دلخواه نمایش داده شود
+    $customVolumeCategories = ["حجمی | مولتی لوکیشن | ماهانه"];
+    if ($statuscustomvolume == "1" && $marzban_list_get['type'] != "Manualsale" && in_array($categorynames, $customVolumeCategories)) {
         $statuscustom = true;
     } else {
         $statuscustom = false;
