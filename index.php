@@ -381,13 +381,13 @@ if ($user['joinchannel'] != "active") {
 #-----------claim_existing_config------------#
 if ($datain == "claimconfig") {
     $claimKb = json_encode(['inline_keyboard' => [[['text' => '🔙 انصراف', 'callback_data' => 'backuser']]]]);
-    sendmessage($from_id, '📌 اسم کانفیگت توی پنل رو بفرست (مثلاً: ali12)\nاگه می‌خوای منصرف بشی، دکمه بازگشت رو بزن.', $claimKb, 'html');
+    sendmessage($from_id, '📌 یوزرنیم پنلتون رو وارد کنید.\n\n💡 راهنما: یوزرنیم همونیه که توی لینک ساب/کانفیگت کنارش نوشته شده (مثلاً: ali12).\nمیتونی از پنل سنایی، بخش کلاینت‌ها، اسم دقیقش رو ببینی.\n\nاگه می‌خوای منصرف بشی، دکمه بازگشت رو بزن.', $claimKb, 'html');
     step('claimconfig', $from_id);
     return;
 } elseif ($user['step'] == "claimconfig" && $text != '' && !$is_bot) {
     $claimName = strtolower(trim($text));
     if (!preg_match('/^[a-z0-9_]{3,32}$/', $claimName)) {
-        sendmessage($from_id, '❌ اسم کانفیگ باید فقط حروف انگلیسی و عدد باشه (۳ تا ۳۲ کاراکتر).\nمثلاً: ali12', null, 'html');
+        sendmessage($from_id, '❌ یوزرنیم باید فقط حروف انگلیسی و عدد باشه (۳ تا ۳۲ کاراکتر).\n💡 همون اسمی که توی پنل سنایی، کنار کانفیگت نوشته شده (مثلاً: ali12).', null, 'html');
         return;
     }
     $stmtPanels = $pdo->prepare("SELECT * FROM marzban_panel WHERE type = 'x-ui_single' AND status = 'active'");
@@ -423,7 +423,7 @@ if ($datain == "claimconfig") {
         return;
     }
     if (!$claimed) {
-        sendmessage($from_id, '❌ کانفیگی با این اسم توی پنل پیدا نشد.\n📌 اسم دقیق کانفیگت رو چک کن و دوباره بفرست (یا /start بزن تا منصرف بشی).', null, 'html');
+        sendmessage($from_id, '❌ کانفیگی با این اسم توی پنل پیدا نشد.\n💡 یوزرنیم دقیقاً همون اسمیه که توی پنل سنایی، بخش کلاینت‌ها کنار کانفیگت نوشته شده.\n📌 اگه مطمئنی اسم درسته ولی وصل نشد، با پشتیبانی در ارتباط باش: @UserCake\n(یا /start بزن تا منصرف بشی)', null, 'html');
     }
     return;
 }
