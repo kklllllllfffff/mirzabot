@@ -153,7 +153,8 @@ class ManagePanel
             } else {
                 $inbounds = $Get_Data_Panel['inbounds'];
             }
-            $data_Output = addClient($Get_Data_Panel, $usernameC, $expire, $subId, $data_limit, $inbounds, $Get_Data_Product['name_product'], $note);
+                        $ipLimit = isset($Get_Data_Product['ip_limit']) ? intval($Get_Data_Product['ip_limit']) : 0;
+            $data_Output = addClient($Get_Data_Panel, $usernameC, $expire, $subId, $data_limit, $inbounds, $Get_Data_Product['name_product'], $note, $ipLimit);
             if (!empty($data_Output['error'])) {
                 return array(
                     'status' => 'Unsuccessful',
