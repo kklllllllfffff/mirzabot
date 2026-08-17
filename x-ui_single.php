@@ -49,7 +49,7 @@ function addClient($panel, $usernameac, $Expire, $subId, $Total, $inboundid, $na
         "comment" => $note,
         "enable" => true,
         "subId" => $subId,
-        "ipLimit" => intval($ipLimit)
+        "limit_ip" => intval($ipLimit)
     ];
     $config = array(
         "inboundIds" => json_decode($inboundid, true),
