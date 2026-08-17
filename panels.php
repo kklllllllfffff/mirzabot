@@ -155,6 +155,10 @@ class ManagePanel
             }
                         $ipLimit = isset($Get_Data_Product['ip_limit']) ? intval($Get_Data_Product['ip_limit']) : 0;
             $data_Output = addClient($Get_Data_Panel, $usernameC, $expire, $subId, $data_limit, $inbounds, $Get_Data_Product['name_product'], $note, $ipLimit);
+            // اگر ip_limit > 0 بود، بعد از ساخت با update ستش کن (add قبولش نمی‌کنه)
+            if ($ipLimit > 0) {
+                @setClientIpLimit($Get_Data_Panel, $usernameC, $ipLimit, json_decode($inbounds, true) ?: [1]);
+            }
             if (!empty($data_Output['error'])) {
                 return array(
                     'status' => 'Unsuccessful',
