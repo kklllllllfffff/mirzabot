@@ -13,6 +13,7 @@
 //     Schedule: */30 * * * *   (هر ۳۰ دقیقه)
 // ═══════════════════════════════════════════════════════════════════
 require_once 'config.php';
+require_once 'function.php';
 
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
