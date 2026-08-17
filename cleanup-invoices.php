@@ -45,12 +45,20 @@ foreach ($locations as $loc) {
     $resp = curl_exec($ch);
     curl_close($ch);
     $data = json_decode($resp, true);
+    $apiOk = false;
     if (is_array($data) && !empty($data['success'])) {
         foreach ($data['obj'] ?? [] as $inb) {
             foreach ($inb['clientStats'] ?? [] as $cs) {
                 $clients[$cs['email']] = true;
+                $apiOk = true;
             }
         }
+    }
+    // امنیت: اگه API جواب نداد یا کلاینتی برنگردوند، هیچی پاک نکن!
+    if (!$apiOk || empty($clients)) {
+        echo "   ⚠️ API پنل جواب نداد یا خالی بود — حذف لغو شد (امنیت)
+";
+        continue;
     }
 
     // سرویس‌های بات که توی پنل نیستن رو حذف کن
