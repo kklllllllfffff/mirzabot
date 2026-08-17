@@ -67,6 +67,27 @@ function addClient($panel, $usernameac, $Expire, $subId, $Total, $inboundid, $na
     $response = $req->post($configpanel);
     return $response;
 }
+function setClientIpLimit($panel, $email, $limitIp, $inboundIds = [1])
+{
+    // بعد از ساخت کلاینت، limitIp رو با update ست می‌کنیم (add قبولش نمی‌کنه)
+    $url = $panel['url_panel'] . '/panel/api/clients/update/' . $email;
+    $headers = array(
+        'Accept: application/json',
+        'Content-Type: application/json',
+    );
+    $body = array(
+        'inboundIds' => $inboundIds,
+        'client' => array(
+            'email' => $email,
+            'limitIp' => intval($limitIp),
+        ),
+    );
+    $req = new CurlRequest($url);
+    $req->setHeaders($headers);
+    $req->setBearerToken($panel['password_panel']);
+    $response = $req->post(json_encode($body));
+    return $response;
+}
 function updateClient($panel, $uuid, array $config)
 {
 
