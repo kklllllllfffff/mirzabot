@@ -277,6 +277,6 @@ Thanks to everyone who has contributed to making Mirza Bot better:
 
 **Made with ❤️ by the Mirza Panel community**
 
-💬 [Channel](https://t.me/mirzapanel) · 👥 [Group](https://t.me/mirzapanelgroup) · ⭐ [Star on GitHub](https://github.com/mahdiMGF2/mirzabot)
+💬 [Channel](https://t.me/mirzapanel) · 👥 [Group](https://t.me/mirzapanelgroup) · ⭐ [Star on GitHub](https://github.com/mahdiMGF2/mirzabot).
 
 </div>
