@@ -748,9 +748,15 @@ $list_marzban_usertest = json_encode($list_marzban_panel_usertest);
 $payment = json_encode([
     'inline_keyboard' => [
         [['text' => $textbotlang['keyboard']['payAndGetService'], 'callback_data' => "confirmandgetservice"]],
+        [['text' => $textbotlang['keyboard']['registerDiscountCode'], 'callback_data' => "aptdc"]],
+        [['text' => $textbotlang['users']['backbtn'], 'callback_data' => "backuser"]]
+    ]
+]);
+// پیش‌فاکتور: اول سوال «اپراتور ایرانسل هست؟»، بعد از پاسخ، دکمه‌های پرداخت می‌آیند
+$payment_irancell = json_encode([
+    'inline_keyboard' => [
         [['text' => $textbotlang['keyboard']['irancellQuestion'], 'callback_data' => "noop"]],
         [['text' => $textbotlang['keyboard']['irancellYes'], 'callback_data' => "irancell:yes"], ['text' => $textbotlang['keyboard']['irancellNo'], 'callback_data' => "irancell:no"]],
-        [['text' => $textbotlang['keyboard']['registerDiscountCode'], 'callback_data' => "aptdc"]],
         [['text' => $textbotlang['users']['backbtn'], 'callback_data' => "backuser"]]
     ]
 ]);

@@ -3813,17 +3813,18 @@ if ($user['step'] == "createusertest" || preg_match('/locationtest_(.*)/', $data
         $textin = str_replace($textbotlang['common']['units']['gb'], "", $textin);
     }
     if ($user['step'] != "getvolumecustomuser" && !in_array($marzban_list_get['MethodUsername'], [$textbotlang['common']['labels']['customUsername'], $textbotlang['common']['labels']['customUsernameRandom']])) {
-        Editmessagetext($from_id, $message_id, $textin, $payment);
+        Editmessagetext($from_id, $message_id, $textin, $payment_irancell);
     } else {
-        sendmessage($from_id, $textin, $payment, 'HTML');
+        sendmessage($from_id, $textin, $payment_irancell, 'HTML');
     }
     step('payment', $from_id);
 } elseif ($user['step'] == "payment" && ($datain == "irancell:yes" || $datain == "irancell:no")) {
     $irancellFlag = ($datain == "irancell:yes") ? '1' : '0';
     update("user", "irancell", $irancellFlag, "id", $from_id);
     $confirmMsg = $irancellFlag === '1'
-        ? $textbotlang['keyboard']['irancellYes'] . " ✅"
-        : $textbotlang['keyboard']['irancellNo'];
+        ? "✅ " . $textbotlang['keyboard']['irancellYes']
+        : "🙅 " . $textbotlang['keyboard']['irancellNo'];
+    // بعد از پاسخ، دکمه‌های پرداخت (پرداخت + کد تخفیف + بازگشت) نمایش داده می‌شود
     Editmessagetext($from_id, $message_id, $confirmMsg, $payment);
     step('payment', $from_id);
     return;
