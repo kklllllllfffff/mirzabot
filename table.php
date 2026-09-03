@@ -49,11 +49,13 @@ try {
             status_cron VARCHAR(20)  NULL DEFAULT '1',
             expire VARCHAR(100) NULL ,
             token VARCHAR(100) NULL,
-            lang VARCHAR(5) NULL  DEFAULT 'fa'
+            lang VARCHAR(5) NULL  DEFAULT 'fa',
+            irancell TINYINT(1) NOT NULL DEFAULT 0
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
         $stmt->execute();
     } else {
         addFieldToTable($tableName, "lang", "fa", "varchar(5)");
+        addFieldToTable($tableName, 'irancell', "0", "TINYINT(1) NOT NULL DEFAULT 0");
         addFieldToTable($tableName, 'token', null, "VARCHAR(100)");
         addFieldToTable($tableName, 'status_cron', "1", "VARCHAR(20)");
         addFieldToTable($tableName, 'expire', NULL, "VARCHAR(100)");
