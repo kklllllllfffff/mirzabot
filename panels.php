@@ -12,6 +12,8 @@ require_once __DIR__ . '/ibsng.php';
 require_once __DIR__ . '/mikrotik.php';
 require_once __DIR__ . '/mirza_agent.php';
 require_once __DIR__ . '/Rebecca.php';
+require_once __DIR__ . '/external_links.php';
+require_once __DIR__ . '/external_links_config.php';
 
 class ManagePanel
 {
@@ -184,6 +186,13 @@ class ManagePanel
                     $Output['username'] = $usernameC;
                     $Output['subscription_url'] = $Get_Data_Panel['linksubx'] . "/{$subId}";
                     $Output['configs'] = $links_user;
+                    // ——— اپراتور ایرانسل: افزودن خودکار لینک‌های خارجی/سابِ تانل‌شده ———
+                    if (isset($Data_Config['irancell']) && (string) $Data_Config['irancell'] === '1') {
+                        $irancellRes = external_links_apply($Get_Data_Panel['url_panel'], $Get_Data_Panel['password_panel'], $usernameC);
+                        if (!$irancellRes['success']) {
+                            error_log('external-links irancell [' . $usernameC . '] error: ' . ($irancellRes['msg'] ?? 'unknown'));
+                        }
+                    }
                     if ($invoice != false) {
                         $Output['subscription_url'] = "https://$domainhosts/sub/" . $invoice['id_invoice'];
                     }

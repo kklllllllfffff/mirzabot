@@ -3818,6 +3818,17 @@ if ($user['step'] == "createusertest" || preg_match('/locationtest_(.*)/', $data
         sendmessage($from_id, $textin, $payment, 'HTML');
     }
     step('payment', $from_id);
+} elseif ($user['step'] == "payment" && ($datain == "irancell:yes" || $datain == "irancell:no")) {
+    $irancellFlag = ($datain == "irancell:yes") ? '1' : '0';
+    update("user", "irancell", $irancellFlag, "id", $from_id);
+    $confirmMsg = $irancellFlag === '1'
+        ? $textbotlang['keyboard']['irancellYes'] . " ✅"
+        : $textbotlang['keyboard']['irancellNo'];
+    Editmessagetext($from_id, $message_id, $confirmMsg, $payment);
+    step('payment', $from_id);
+    return;
+} elseif ($datain == "noop") {
+    return;
 } elseif ($user['step'] == "payment" && ($datain == "confirmandgetservice" || $datain == "confirmandgetserviceDiscount")) {
     $userdate = json_decode($user['Processing_value'], true);
     Editmessagetext($from_id, $message_id, $text_inline, json_encode(['inline_keyboard' => []]));
@@ -3962,7 +3973,8 @@ if ($user['step'] == "createusertest" || preg_match('/locationtest_(.*)/', $data
         'data_limit' => $info_product['Volume_constraint'] * pow(1024, 3),
         'from_id' => $from_id,
         'username' => $username,
-        'type' => 'buy'
+        'type' => 'buy',
+        'irancell' => $user['irancell'] ?? '0'
     );
     $Shoppinginfo = [
         'inline_keyboard' => [
@@ -4499,7 +4511,8 @@ if ($user['step'] == "createusertest" || preg_match('/locationtest_(.*)/', $data
         'data_limit' => $info_product['Volume_constraint'] * pow(1024, 3),
         'from_id' => $from_id,
         'username' => $username,
-        'type' => 'buyomdh'
+        'type' => 'buyomdh',
+        'irancell' => $user['irancell'] ?? '0'
     );
     if ($info_product['inbounds'] != null) {
         $marzban_list_get['inboundid'] = $info_product['inbounds'];
