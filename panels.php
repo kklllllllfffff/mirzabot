@@ -162,11 +162,13 @@ class ManagePanel
                 @setClientIpLimit($Get_Data_Panel, $usernameC, $ipLimit, json_decode($inbounds, true) ?: [1]);
             }
             if (!empty($data_Output['error'])) {
+                error_log('xui addClient error [' . $usernameC . ']: ' . $data_Output['error']);
                 return array(
                     'status' => 'Unsuccessful',
                     'msg' => $data_Output['error']
                 );
             } elseif (!empty($data_Output['status']) && $data_Output['status'] != 200) {
+                error_log('xui addClient HTTP ' . $data_Output['status'] . ' [' . $usernameC . '] body: ' . ($data_Output['body'] ?? ''));
                 return array(
                     'status' => 'Unsuccessful',
                     'msg' => $data_Output['status']
@@ -174,6 +176,7 @@ class ManagePanel
             } else {
                 $data_Output = json_decode($data_Output['body'], true);
                 if (!$data_Output['success']) {
+                    error_log('xui addClient panel fail [' . $usernameC . '] body: ' . ($data_Output['body'] ?? '') . var_export($data_Output, true));
                     $Output['status'] = 'Unsuccessful';
                     $Output['msg'] = $data_Output['msg'];
                 } else {
